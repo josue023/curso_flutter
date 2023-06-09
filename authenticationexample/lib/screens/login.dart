@@ -1,3 +1,4 @@
+import 'package:authenticationexample/screens/register.dart';
 import 'package:authenticationexample/screens/userscreen.dart';
 import 'package:authenticationexample/utils/firebase_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,7 +18,14 @@ class _LoginScreenState extends State<LoginScreen>{
   final _focusEmail = FocusNode();
   final _focusPassword = FocusNode();
 
-  bool _processing = false;
+  late bool _processing = false;
+
+  @override
+  void dispose() {
+    _emailFieldController.dispose();
+    _passwordFieldController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context){
@@ -28,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen>{
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Login"),
+          title: Text("Login Screen")
         ),
         body: FutureBuilder(
           future: _initFirebase(),
@@ -67,9 +75,10 @@ class _LoginScreenState extends State<LoginScreen>{
                     ),
 
                     SizedBox(height: 12,),
+
                     _processing
                     ? CircularProgressIndicator()
-                    :Row(
+                    : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
@@ -93,25 +102,30 @@ class _LoginScreenState extends State<LoginScreen>{
 
                                 if(user != null){
                                   Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                        builder: (context) => UserScreen(user: user)
-                                    )
+                                      MaterialPageRoute(
+                                          builder: (context) => UserScreen(user: user)
+                                      )
                                   );
                                 }
 
                               },
+                              /*style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue
+                              ),*/
                               child: const Text(
                                 "Login",
                                 style: TextStyle(color: Colors.white),
-                              )
+                              ),
                           ),
                         ),
-                        SizedBox(width: 25,),
+                        const SizedBox(width: 25,),
 
                         Expanded(
                           child: ElevatedButton(
                               onPressed: (){
-
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => RegisterScreen())
+                                );
                               },
                               child: Text(
                                 "Register",
@@ -125,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen>{
                 ),
               );
             }
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           },
         ),
       ),
@@ -136,4 +150,5 @@ class _LoginScreenState extends State<LoginScreen>{
     FirebaseApp firebaseApp = await Firebase.initializeApp();
     return firebaseApp;
   }
+
 }

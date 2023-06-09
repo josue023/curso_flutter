@@ -24,4 +24,35 @@ class FireAuth{
     }
     return user;
   }
+
+  static Future<User?> singUpUsingEmailAndPass({
+    required String name,
+    required String email,
+    required String pass
+  }) async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user;
+
+    try{
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+          email: email,
+          password: pass
+      );
+
+      user = userCredential.user;
+      await user!.updateDisplayName(name);
+      await user.reload();
+      user = auth.currentUser;
+    }on FirebaseAuthException catch(e){
+      if(e.code == "weak-password"){
+        print("Warning: clave debil");
+      }else if(e.code == "email-already-in-use"){
+        print("Error: Email already in use");
+      }
+    }catch(e){
+      print(e);
+    }
+
+    return user;
+  }
 }
