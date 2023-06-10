@@ -1,6 +1,7 @@
 import 'package:authenticationexample/screens/register.dart';
 import 'package:authenticationexample/screens/userscreen.dart';
 import 'package:authenticationexample/utils/firebase_auth.dart';
+import 'package:authenticationexample/utils/validators.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ class LoginScreen extends StatefulWidget{
 }
 
 class _LoginScreenState extends State<LoginScreen>{
+
+  final _formKey = GlobalKey<FormState>();
   final _emailFieldController = TextEditingController();
   final _passwordFieldController = TextEditingController();
 
@@ -57,24 +60,34 @@ class _LoginScreenState extends State<LoginScreen>{
                         ),
                       ),
                     ),
-                    TextField(
-                      controller: _emailFieldController,
-                      focusNode: _focusEmail,
-                      decoration: const InputDecoration(
-                          hintText: "Email"
-                      ),
-                    ),
-                    SizedBox(height: 8,),
-                    TextField(
-                      controller: _passwordFieldController,
-                      focusNode: _focusPassword,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                          hintText: "Password"
-                      ),
-                    ),
+                    //---------FORMULARIO DE LOGIN--------------------
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _emailFieldController,
+                            focusNode: _focusEmail,
+                            validator: (value) => Validator.validateEmail(email: value!),
+                            decoration: const InputDecoration(
+                                hintText: "Email"
+                            ),
+                          ),
+                          SizedBox(height: 8,),
+                          TextFormField(
+                            controller: _passwordFieldController,
+                            focusNode: _focusPassword,
+                            validator: (value) => Validator.validatePassword(password: value!),
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                                hintText: "Password"
+                            ),
+                          ),
 
-                    SizedBox(height: 12,),
+                          SizedBox(height: 12,),
+                        ],
+                      ),
+                    ),
 
                     _processing
                     ? CircularProgressIndicator()
@@ -87,26 +100,29 @@ class _LoginScreenState extends State<LoginScreen>{
                                 _focusPassword.unfocus();
                                 _focusEmail.unfocus();
 
-                                setState(() {
-                                  _processing = true;
-                                });
+                                if(_formKey.currentState!.validate()){
+                                  setState(() {
+                                    _processing = true;
+                                  });
 
-                                User? user = await FireAuth.singInUsingEmailAndPass(
-                                    email: _emailFieldController.text,
-                                    password: _passwordFieldController.text
-                                );
-
-                                setState(() {
-                                  _processing = false;
-                                });
-
-                                if(user != null){
-                                  Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(
-                                          builder: (context) => UserScreen(user: user)
-                                      )
+                                  User? user = await FireAuth.singInUsingEmailAndPass(
+                                      email: _emailFieldController.text,
+                                      password: _passwordFieldController.text
                                   );
+
+                                  setState(() {
+                                    _processing = false;
+                                  });
+
+                                  if(user != null){
+                                    Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(
+                                            builder: (context) => UserScreen(user: user)
+                                        )
+                                    );
+                                  }
                                 }
+
 
                               },
                               /*style: ElevatedButton.styleFrom(

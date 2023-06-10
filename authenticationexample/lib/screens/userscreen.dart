@@ -1,3 +1,4 @@
+import 'package:authenticationexample/screens/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,9 @@ class UserScreen extends StatefulWidget{
 class _UserScreenState extends State<UserScreen>{
 
   late User _user;
+  bool _isSendingVerification = false;
+  bool _isSigningOut = false;
+
   @override
   void initState() {
     _user = widget.user;
@@ -35,6 +39,63 @@ class _UserScreenState extends State<UserScreen>{
             Text("Email: ${_user.email}",
               style: Theme.of(context).textTheme.bodyLarge,
             ),
+
+            _user.emailVerified
+            ? const Text("Email verificado",
+                style: TextStyle(color: Colors.green),
+              )
+            : const Text("Email no verificado",
+                style: TextStyle(color: Colors.red),
+              ),
+
+            _user.emailVerified
+            ? Container()
+            : _isSendingVerification
+              ? CircularProgressIndicator()
+              : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        _isSendingVerification = true;
+                      });
+
+                      await _user.sendEmailVerification();
+
+                      setState(() {
+                        _isSendingVerification = false;
+                      });
+                    },
+                    child: const Text("Verificar email",
+                      style: TextStyle(color: Colors.white),
+                    )
+                )
+              ],
+            ),
+
+            _isSigningOut
+            ? CircularProgressIndicator()
+            : ElevatedButton(
+                onPressed: (){
+                  setState(() {
+                    _isSigningOut = true;
+                  });
+
+                  FirebaseAuth.instance.signOut();
+                  
+                  setState(() {
+                    _isSigningOut = false;
+                  });
+                  
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => LoginScreen())
+                  );
+                },
+                child: const Text("Sign Out",
+                          style: TextStyle(color: Colors.white),
+                        )
+            )
 
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:authenticationexample/screens/userscreen.dart';
 import 'package:authenticationexample/utils/firebase_auth.dart';
+import 'package:authenticationexample/utils/validators.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,7 @@ class RegisterScreen extends StatefulWidget{
 
 class _RegisterScreenState extends State<RegisterScreen>{
 
+  final _formKey = GlobalKey<FormState>();
   final _nameFieldController = TextEditingController();
   final _emailFieldController = TextEditingController();
   final _passwordFieldController = TextEditingController();
@@ -49,34 +51,45 @@ class _RegisterScreenState extends State<RegisterScreen>{
                     ),
                   ),
                 ),
-                TextField(
-                  controller: _nameFieldController,
-                  focusNode: _focusName,
-                  decoration: const InputDecoration(
-                      hintText: "Name"
+                //--------------FORMULARIO DE REGISTER---------------
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _nameFieldController,
+                        focusNode: _focusName,
+                        validator: (value) => Validator.validateName(name: value!),
+                        decoration: const InputDecoration(
+                            hintText: "Name"
+                        ),
+                      ),
+                      SizedBox(height: 8,),
+
+                      TextFormField(
+                        controller: _emailFieldController,
+                        focusNode: _focusEmail,
+                        validator: (value) => Validator.validateEmail(email: value!),
+                        decoration: const InputDecoration(
+                            hintText: "Email"
+                        ),
+                      ),
+                      SizedBox(height: 8,),
+
+                      TextFormField(
+                        controller: _passwordFieldController,
+                        focusNode: _focusPassword,
+                        validator: (value) => Validator.validatePassword(password: value!),
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                            hintText: "Password"
+                        ),
+                      ),
+
+                      SizedBox(height: 12,),
+                    ],
                   ),
                 ),
-                SizedBox(height: 8,),
-
-                TextField(
-                  controller: _emailFieldController,
-                  focusNode: _focusEmail,
-                  decoration: const InputDecoration(
-                      hintText: "Email"
-                  ),
-                ),
-                SizedBox(height: 8,),
-
-                TextField(
-                  controller: _passwordFieldController,
-                  focusNode: _focusPassword,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                      hintText: "Password"
-                  ),
-                ),
-
-                SizedBox(height: 12,),
 
                 _processing
                 ? CircularProgressIndicator()
@@ -85,25 +98,34 @@ class _RegisterScreenState extends State<RegisterScreen>{
                     Expanded(
                       child: ElevatedButton(
                           onPressed: () async {
-                            setState(() {
-                              _processing = true;
-                            });
 
-                            User? user = await FireAuth.singUpUsingEmailAndPass(
-                                name: _nameFieldController.text,
-                                email: _emailFieldController.text,
-                                pass: _passwordFieldController.text
-                            );
+                            _focusName.unfocus();
+                            _focusEmail.unfocus();
+                            _focusPassword.unfocus();
 
-                            setState(() {
-                              _processing = false;
-                            });
+                            if(_formKey.currentState!.validate()){
+                              setState(() {
+                                _processing = true;
+                              });
 
-                            if(user != null){
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => UserScreen(user: user))
+                              User? user = await FireAuth.singUpUsingEmailAndPass(
+                                  name: _nameFieldController.text,
+                                  email: _emailFieldController.text,
+                                  pass: _passwordFieldController.text
                               );
+
+                              setState(() {
+                                _processing = false;
+                              });
+
+                              if(user != null){
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(builder: (context) => UserScreen(user: user))
+                                );
+                              }
                             }
+
+
                           },
                           child: const Text("Sign Up", style: TextStyle(color: Colors.white),)
                       ),
