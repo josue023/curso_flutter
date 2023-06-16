@@ -35,10 +35,6 @@ class Validator{
       return null;
     }
 
-    RegExp passRegExp = RegExp(
-        r"^(?=.*\d)(?=.*[\u0021-\u002b\u003c-\u0040])(?=.*[A-Z])(?=.*[a-z])\S{8,16}$"
-    );
-
     if(password.isEmpty){
       return "Password can\'t be empty";
     }else if(password.length < 6){
